@@ -1,12 +1,5 @@
 [
   {
-    "name": "稀饭动漫",
-    "version": "1.0.0",
-    "icon": "123.png",
-    "path": "xfdm.json",
-    "updateTime": "1757053179000"
-  },
-  {
     "name": "NT动漫",
     "version": "1.0.3",
     "icon": "https://cdn.yinghuazy.xyz/webjs/ntdm8/image/favicon.ico",
