@@ -1,0 +1,169 @@
+name: Validate Plugin JSON
+
+on:
+  push:
+    paths:
+      - 'plugins/*.json'
+  pull_request:
+    paths:
+      - 'plugins/*.json'
+
+jobs:
+  validate-json:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Get changed JSON files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: |
+            plugins/*.json
+
+      - name: Validate JSON format and structure
+        run: |
+          # 定义必需的字段及其类型
+          declare -A REQUIRED_FIELDS_TYPES
+          REQUIRED_FIELDS_TYPES["version"]="string"
+          REQUIRED_FIELDS_TYPES["name"]="string"
+          REQUIRED_FIELDS_TYPES["iconUrl"]="string"
+          REQUIRED_FIELDS_TYPES["baseUrl"]="string"
+          REQUIRED_FIELDS_TYPES["searchUrl"]="string"
+          REQUIRED_FIELDS_TYPES["searchList"]="string"
+          REQUIRED_FIELDS_TYPES["searchName"]="string"
+          REQUIRED_FIELDS_TYPES["searchLink"]="string"
+          REQUIRED_FIELDS_TYPES["lineNames"]="string"
+          REQUIRED_FIELDS_TYPES["lineList"]="string"
+          REQUIRED_FIELDS_TYPES["episode"]="string"
+          
+          # 转换为数组以便遍历
+          REQUIRED_FIELDS=("version" "name" "iconUrl" "baseUrl" "searchUrl" "searchList" "searchName" "searchLink" "lineNames" "lineList" "episode")
+          
+          echo "📋 Plugin JSON format requirements:"
+          echo "Required fields: ${REQUIRED_FIELDS[*]}"
+          echo "All fields must be of type: string"
+          echo ""
+          
+          # 获取所有变更的 JSON 文件
+          CHANGED_FILES="${{ steps.changed-files.outputs.all_changed_files }}"
+          
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No JSON files changed, skipping validation"
+            exit 0
+          fi
+          
+          VALIDATION_FAILED=false
+          
+          # 遍历每个变更的 JSON 文件（排除 index.json）
+          for file in $CHANGED_FILES; do
+            if [[ "$file" == *"index.json"* ]]; then
+              echo "⏭️  Skipping index.json validation"
+              continue
+            fi
+            
+            # 跳过模板文件本身
+            if [[ "$file" == "$TEMPLATE_FILE" ]]; then
+              echo "⏭️  Skipping template file: $file"
+              continue
+            fi
+            
+            echo "🔍 Validating: $file"
+            
+            # 检查文件是否存在
+            if [ ! -f "$file" ]; then
+              echo "   ❌ Error: File $file does not exist"
+              VALIDATION_FAILED=true
+              echo ""
+              continue
+            fi
+            
+            # 验证 JSON 格式是否正确
+            if ! jq empty "$file" 2>/dev/null; then
+              echo "   ❌ Error: $file is not valid JSON"
+              jq empty "$file" 2>&1 | sed 's/^/      /'
+              VALIDATION_FAILED=true
+              echo ""
+              continue
+            fi
+            
+            # 获取待验证文件的所有键
+            FILE_KEYS=$(jq -r 'keys[]' "$file")
+            
+            # 检查必需字段是否存在且类型匹配
+            for field in "${REQUIRED_FIELDS[@]}"; do
+              expected_type="${REQUIRED_FIELDS_TYPES[$field]}"
+              
+              if ! jq -e ".$field" "$file" > /dev/null 2>&1; then
+                echo "   ❌ Error: Missing required field: $field"
+                VALIDATION_FAILED=true
+              else
+                # 验证字段类型是否与规范匹配
+                file_field_type=$(jq -r ".$field | type" "$file")
+                
+                if [ "$file_field_type" == "null" ]; then
+                  echo "   ❌ Error: Field '$field' has null value (required non-null)"
+                  VALIDATION_FAILED=true
+                elif [ "$file_field_type" != "$expected_type" ]; then
+                  echo "   ❌ Error: Field '$field' type mismatch. Expected: $expected_type, Got: $file_field_type"
+                  VALIDATION_FAILED=true
+                fi
+              fi
+            done
+            
+            # 检查是否有额外的字段（给出警告，但不阻止）
+            for key in $FILE_KEYS; do
+              if [[ ! " ${REQUIRED_FIELDS[@]} " =~ " ${key} " ]]; then
+                echo "   ⚠️  Warning: Extra field '$key' found (not in template)"
+              fi
+            done
+            
+            # 验证版本号格式（应该是字符串，如 "1.0.0"）
+            version=$(jq -r '.version' "$file")
+            if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "   ⚠️  Warning: version format should be semantic (e.g., '1.0.0'), got: '$version'"
+            fi
+            
+            # 验证 URL 字段格式
+            iconUrl=$(jq -r '.iconUrl' "$file")
+            if [[ ! "$iconUrl" =~ ^https?:// ]]; then
+              echo "   ⚠️  Warning: iconUrl should be a valid HTTP(S) URL, got: '$iconUrl'"
+            fi
+            
+            baseUrl=$(jq -r '.baseUrl' "$file")
+            if [[ ! "$baseUrl" =~ ^https?:// ]]; then
+              echo "   ⚠️  Warning: baseUrl should be a valid HTTP(S) URL, got: '$baseUrl'"
+            fi
+            
+            searchUrl=$(jq -r '.searchUrl' "$file")
+            if [[ ! "$searchUrl" =~ ^https?:// ]]; then
+              echo "   ⚠️  Warning: searchUrl should be a valid HTTP(S) URL, got: '$searchUrl'"
+            elif [[ ! "$searchUrl" =~ \{keyword\} ]]; then
+              echo "   ⚠️  Warning: searchUrl should contain {keyword} placeholder, got: '$searchUrl'"
+            fi
+            
+            if [ "$VALIDATION_FAILED" = false ]; then
+              echo "   ✅ Validation passed"
+            fi
+            echo ""
+          done
+          
+          if [ "$VALIDATION_FAILED" = true ]; then
+            echo "❌ Validation failed! Please fix the errors above."
+            echo ""
+            echo "📝 Expected format:"
+            echo "{"
+            for field in "${REQUIRED_FIELDS[@]}"; do
+              echo "  \"$field\": \"<string value>\""
+            done
+            echo "}"
+            exit 1
+          else
+            echo "✅ All JSON files validated successfully!"
+            echo ""
+            echo "All plugin JSON files match the required format specification."
+          fi
