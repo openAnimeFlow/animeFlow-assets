@@ -66,12 +66,6 @@ jobs:
               continue
             fi
             
-            # 跳过模板文件本身
-            if [[ "$file" == "$TEMPLATE_FILE" ]]; then
-              echo "⏭️  Skipping template file: $file"
-              continue
-            fi
-            
             echo "🔍 Validating: $file"
             
             # 检查文件是否存在
@@ -167,3 +161,127 @@ jobs:
             echo ""
             echo "All plugin JSON files match the required format specification."
           fi
+
+      - name: Update index.json
+        if: github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip index]')
+        run: |
+          CHANGED_FILES="${{ steps.changed-files.outputs.all_changed_files }}"
+          INDEX_FILE="plugins/index.json"
+          
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No JSON files changed, skipping index.json update"
+            exit 0
+          fi
+          
+          # 检查 index.json 是否存在，不存在则创建
+          if [ ! -f "$INDEX_FILE" ]; then
+            echo "[]" > "$INDEX_FILE"
+            echo "Created empty $INDEX_FILE"
+          fi
+          
+          # 获取当前时间戳（毫秒）
+          UPDATE_TIME=$(date +%s)000
+          
+          PLUGIN_FILES_UPDATED=0
+          
+          # 遍历每个变更的 JSON 文件（排除 index.json）
+          for file in $CHANGED_FILES; do
+            if [[ "$file" == *"index.json"* ]]; then
+              echo "⏭️  Skipping index.json"
+              continue
+            fi
+            
+            # 只处理 plugins/ 目录下的 .json 文件
+            if [[ "$file" != plugins/*.json ]]; then
+              continue
+            fi
+            
+            echo "📝 Updating index for: $file"
+            
+            # 检查文件是否存在
+            if [ ! -f "$file" ]; then
+              echo "   ⚠️  File $file does not exist (may have been deleted), skipping"
+              continue
+            fi
+            
+            # 提取文件名
+            FILENAME=$(basename "$file")
+            
+            # 从 JSON 文件提取信息
+            NAME=$(jq -r '.name' "$file")
+            VERSION=$(jq -r '.version' "$file")
+            ICON_URL=$(jq -r '.iconUrl' "$file")
+            
+            echo "   Name: $NAME"
+            echo "   Version: $VERSION"
+            echo "   Icon: $ICON_URL"
+            echo "   Path: $FILENAME"
+            echo "   UpdateTime: $UPDATE_TIME"
+            
+            # 检查 index.json 中是否已存在该插件（通过 path 字段匹配）
+            EXISTS=$(jq -r --arg path "$FILENAME" '.[] | select(.path == $path) | .path' "$INDEX_FILE")
+            
+            if [ -n "$EXISTS" ]; then
+              # 更新现有条目
+              echo "   Updating existing entry for $FILENAME"
+              jq --arg path "$FILENAME" \
+                 --arg name "$NAME" \
+                 --arg version "$VERSION" \
+                 --arg icon "$ICON_URL" \
+                 --arg updateTime "$UPDATE_TIME" \
+                 '(.[] | select(.path == $path)) |= {
+                   name: $name,
+                   version: $version,
+                   icon: $icon,
+                   path: $path,
+                   updateTime: $updateTime
+                 }' "$INDEX_FILE" > "${INDEX_FILE}.tmp" && mv "${INDEX_FILE}.tmp" "$INDEX_FILE"
+            else
+              # 添加新条目
+              echo "   Adding new entry for $FILENAME"
+              jq --arg name "$NAME" \
+                 --arg version "$VERSION" \
+                 --arg icon "$ICON_URL" \
+                 --arg path "$FILENAME" \
+                 --arg updateTime "$UPDATE_TIME" \
+                 '. += [{
+                   name: $name,
+                   version: $version,
+                   icon: $icon,
+                   path: $path,
+                   updateTime: $updateTime
+                 }]' "$INDEX_FILE" > "${INDEX_FILE}.tmp" && mv "${INDEX_FILE}.tmp" "$INDEX_FILE"
+            fi
+            
+            PLUGIN_FILES_UPDATED=$((PLUGIN_FILES_UPDATED + 1))
+            echo ""
+          done
+          
+          if [ $PLUGIN_FILES_UPDATED -gt 0 ]; then
+            echo "✅ Updated index.json with $PLUGIN_FILES_UPDATED plugin(s)"
+            echo ""
+            echo "Updated index.json content:"
+            jq . "$INDEX_FILE"
+          else
+            echo "ℹ️  No plugin files to update in index.json"
+          fi
+
+      - name: Commit updated index.json
+        if: github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip index]')
+        run: |
+          INDEX_FILE="plugins/index.json"
+          
+          # 检查 index.json 是否有更改
+          if git diff --quiet "$INDEX_FILE"; then
+            echo "No changes to index.json, skipping commit"
+            exit 0
+          fi
+          
+          # 配置 git
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          # 提交更改
+          git add "$INDEX_FILE"
+          git commit -m "chore: auto-update index.json [skip index]" || exit 0
+          git push
