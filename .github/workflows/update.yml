@@ -11,9 +11,13 @@ on:
 jobs:
   validate-json:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install jq
         run: sudo apt-get update && sudo apt-get install -y jq
@@ -284,4 +288,4 @@ jobs:
           # 提交更改
           git add "$INDEX_FILE"
           git commit -m "chore: auto-update index.json [skip index]" || exit 0
-          git push
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:${{ github.ref }}
