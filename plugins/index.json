@@ -33,5 +33,12 @@
     "icon": "https://dm.xifanacg.com/upload/site/20240308-1/813e41f81d6f85bfd7a44bf8a813f9e5.png",
     "path": "xfdm.json",
     "updateTime": "1769011771000"
+  },
+  {
+    "name": "enlie",
+    "version": "1.0.0",
+    "icon": "https://enlienli.link/template/mxpro/mxtheme/images/favicon.png",
+    "path": "enlie.json",
+    "updateTime": "1773473163000"
   }
 ]
