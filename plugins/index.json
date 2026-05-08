@@ -26,5 +26,19 @@
     "icon": "https://enlienli.link/template/mxpro/mxtheme/images/favicon.png",
     "path": "enlie.json",
     "updateTime": "1773473163000"
+  },
+  {
+    "name": "girigiri愛動漫",
+    "version": "0.0.7",
+    "icon": "https://bgm.girigirilove.com/guanggao/fdd2694db66628a9deadd86e50aedd43.png",
+    "path": "girigiri.json",
+    "updateTime": "1774483896000"
+  },
+  {
+    "name": "稀饭动漫",
+    "version": "1.2.0",
+    "icon": "https://dm.xifanacg.com/upload/site/20240308-1/813e41f81d6f85bfd7a44bf8a813f9e5.png",
+    "path": "xfdm.json",
+    "updateTime": "1774483896000"
   }
 ]
