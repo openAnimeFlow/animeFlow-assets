@@ -47,5 +47,12 @@
     "icon": "https://www.gpjda.com//statics/img/favicon.ico",
     "path": "gpjda.json",
     "updateTime": "1778303054000"
+  },
+  {
+    "name": "喵物次元",
+    "version": "1.0.1",
+    "icon": "https://www.mwcy.net//template/dsn2/static/img/ico.png",
+    "path": "mwcy.json",
+    "updateTime": "1778305900000"
   }
 ]
