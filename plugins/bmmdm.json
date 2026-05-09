@@ -8,6 +8,6 @@
   "searchName": "//h2/a",
   "searchLink": "//h2/a",
   "lineNames": "//div[@class='tabs'][position()= 2] /ul /li",
-  "lineList": "//div[2]/div[2]/div[8]/div/div/ul",
-  "episode": "//li/a"
+  "lineList": "//div[2]/div[2]/div[8]/div/div",
+  "episode": "//ul //a"
 }
