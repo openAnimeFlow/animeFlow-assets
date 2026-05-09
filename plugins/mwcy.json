@@ -1,0 +1,13 @@
+{
+  "version": "1.0.1",
+  "name": "喵物次元",
+  "iconUrl": "https://www.mwcy.net//template/dsn2/static/img/ico.png",
+  "baseUrl": "https://www.mwcy.net/",
+  "searchUrl": "https://www.mwcy.net/search.html?wd={keyword}",
+  "searchList": "//div[@class='vod-detail style-detail cor4 search-list']",
+  "searchName": "//div/div[2] //h3",
+  "searchLink": "//div[@class='flex rel overflow'] /div[2] /a",
+  "lineNames": "//div[@class='swiper-wrapper'] /a",
+  "lineList": "//ul[@class='anthology-list-play size']",
+  "episode": "/li /a"
+}
