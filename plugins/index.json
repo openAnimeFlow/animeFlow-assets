@@ -40,5 +40,12 @@
     "icon": "https://dm.xifanacg.com/upload/site/20240308-1/813e41f81d6f85bfd7a44bf8a813f9e5.png",
     "path": "xfdm.json",
     "updateTime": "1774483896000"
+  },
+  {
+    "name": "萌道动漫",
+    "version": "1.0.0",
+    "icon": "https://www.gpjda.com//statics/img/favicon.ico",
+    "path": "gpjda.json",
+    "updateTime": "1778303054000"
   }
 ]
