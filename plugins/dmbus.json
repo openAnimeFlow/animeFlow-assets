@@ -1,0 +1,13 @@
+{
+  "version": "1.0.0",
+  "name": "动漫巴士",
+  "iconUrl": "https://www.7sefun.top//pc/img/favicon.ico",
+  "baseUrl": "https://dmbus.cc/",
+  "searchUrl": "https://dmbus.cc/s----------.html?wd={keyword}",
+  "searchList": "//div/div[3]/ul/li",
+  "searchName": "//div/a[2]",
+  "searchLink": "//div/a[2]",
+  "lineNames": "//div[@class='container'] /div[4] /ul /li",
+  "lineList": "//div/div[4]/div/ul",
+  "episode": "//li/a"
+}
