@@ -81,7 +81,7 @@ jobs:
             
             echo "🔍 Validating: $file"
             
-            # 检查文件是否存在（删除操作：工作区无文件，跳过校验）
+            # 检查文件是否存在
             if [ ! -f "$file" ]; then
               if is_deleted_file "$file"; then
                 echo "   ⏭️  File $file was deleted, skipping validation"
@@ -198,7 +198,7 @@ jobs:
             echo "Created empty $INDEX_FILE"
           fi
           
-          # 先从 index.json 移除已删除的插件条目（与本地删除 plugins/*.json 同步）
+          # 先从 index.json 移除已删除的插件条目
           for file in $DELETED_FILES; do
             case "$file" in
               *index.json*) continue ;;
@@ -233,7 +233,7 @@ jobs:
             
             echo "📝 Updating index for: $file"
             
-            # 已删除的条目已在上方从 index 移除；此处仅处理仍存在的文件
+            # 已删除的条目已在上方从 index 移除
             if [ ! -f "$file" ]; then
               echo "   ⏭️  File $file does not exist (deleted), already handled for index"
               continue
