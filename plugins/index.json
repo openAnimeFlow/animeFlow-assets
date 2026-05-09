@@ -61,5 +61,12 @@
     "icon": "https://www.bmmdm.com/hdst/hm_pic/favicon.ico",
     "path": "bmmdm.json",
     "updateTime": "1778308110000"
+  },
+  {
+    "name": "樱花动漫",
+    "version": "1.0.0",
+    "icon": "https://www.yinghua-tv.com/favicon.ico",
+    "path": "yinghua.json",
+    "updateTime": "1778311254000"
   }
 ]
