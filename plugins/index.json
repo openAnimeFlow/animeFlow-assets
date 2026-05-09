@@ -54,5 +54,12 @@
     "icon": "https://www.mwcy.net//template/dsn2/static/img/ico.png",
     "path": "mwcy.json",
     "updateTime": "1778305900000"
+  },
+  {
+    "name": "黑猫动漫",
+    "version": "1.0.0",
+    "icon": "https://www.bmmdm.com/hdst/hm_pic/favicon.ico",
+    "path": "bmmdm.json",
+    "updateTime": "1778306791000"
   }
 ]
