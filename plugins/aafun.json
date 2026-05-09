@@ -1,0 +1,13 @@
+{
+  "version": "1.0.0",
+  "name": "风铃动漫",
+  "iconUrl": "https://www.aafun.cc/favicon.ico",
+  "baseUrl": "https://www.aafun.cc/",
+  "searchUrl": "https://www.aafun.cc/feng-s.html?wd={keyword}&submit=",
+  "searchList": "//div/div[2]/div/div[2]/div/div/div[1]/div/div[2]/div/ul/li",
+  "searchName": "//div/div/div[2]/div[1]/div/a",
+  "searchLink": "//div/div/div[2]/div[1]/div/a",
+  "lineNames": "//div[@class='hl-plays-from hl-tabs swiper-wrapper clearfix'] /a ",
+  "lineList": "//div[2]/div[2]/div/div/div[2]/div/div[1]/div[2]/div/div/div/ul",
+  "episode": "//li/a"
+}
