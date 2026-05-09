@@ -68,5 +68,12 @@
     "icon": "https://www.yinghua-tv.com/favicon.ico",
     "path": "yinghua.json",
     "updateTime": "1778311254000"
+  },
+  {
+    "name": "omofun",
+    "version": "1.0.0",
+    "icon": "https://omofun03.top/template/mxpro/mxtheme/images/favicon.png",
+    "path": "omofun03.json",
+    "updateTime": "1778313526000"
   }
 ]
