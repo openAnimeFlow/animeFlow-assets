@@ -82,5 +82,12 @@
     "icon": "https://www.aafun.cc/favicon.ico",
     "path": "aafun.json",
     "updateTime": "1778314285000"
+  },
+  {
+    "name": "动漫KIKU",
+    "version": "1.0.0",
+    "icon": "https://www.dmmiku.com/template/conch/asset/img/favicon.png",
+    "path": "yishijie.json",
+    "updateTime": "1778314907000"
   }
 ]
