@@ -89,5 +89,12 @@
     "icon": "https://www.dmmiku.com/template/conch/asset/img/favicon.png",
     "path": "yishijie.json",
     "updateTime": "1778314907000"
+  },
+  {
+    "name": "动漫巴士",
+    "version": "1.0.0",
+    "icon": "https://www.7sefun.top//pc/img/favicon.ico",
+    "path": "dmbus.json",
+    "updateTime": "1778315495000"
   }
 ]
