@@ -55,11 +55,20 @@ jobs:
           
           # 获取所有变更的 JSON 文件
           CHANGED_FILES="${{ steps.changed-files.outputs.all_changed_files }}"
+          DELETED_FILES="${{ steps.changed-files.outputs.deleted_files }}"
           
-          if [ -z "$CHANGED_FILES" ]; then
+          if [ -z "$CHANGED_FILES" ] && [ -z "$DELETED_FILES" ]; then
             echo "No JSON files changed, skipping validation"
             exit 0
           fi
+          
+          is_deleted_file() {
+            local target="$1"
+            for d in $DELETED_FILES; do
+              [ "$d" = "$target" ] && return 0
+            done
+            return 1
+          }
           
           VALIDATION_FAILED=false
           
@@ -72,8 +81,13 @@ jobs:
             
             echo "🔍 Validating: $file"
             
-            # 检查文件是否存在
+            # 检查文件是否存在（删除操作：工作区无文件，跳过校验）
             if [ ! -f "$file" ]; then
+              if is_deleted_file "$file"; then
+                echo "   ⏭️  File $file was deleted, skipping validation"
+                echo ""
+                continue
+              fi
               echo "   ❌ Error: File $file does not exist"
               VALIDATION_FAILED=true
               echo ""
@@ -170,9 +184,10 @@ jobs:
         if: github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip index]')
         run: |
           CHANGED_FILES="${{ steps.changed-files.outputs.all_changed_files }}"
+          DELETED_FILES="${{ steps.changed-files.outputs.deleted_files }}"
           INDEX_FILE="plugins/index.json"
           
-          if [ -z "$CHANGED_FILES" ]; then
+          if [ -z "$CHANGED_FILES" ] && [ -z "$DELETED_FILES" ]; then
             echo "No JSON files changed, skipping index.json update"
             exit 0
           fi
@@ -182,6 +197,22 @@ jobs:
             echo "[]" > "$INDEX_FILE"
             echo "Created empty $INDEX_FILE"
           fi
+          
+          # 先从 index.json 移除已删除的插件条目（与本地删除 plugins/*.json 同步）
+          for file in $DELETED_FILES; do
+            case "$file" in
+              *index.json*) continue ;;
+              plugins/*.json) ;;
+              *) continue ;;
+            esac
+            FILENAME=$(basename "$file")
+            BEFORE=$(jq length "$INDEX_FILE")
+            jq --arg path "$FILENAME" 'map(select(.path != $path))' "$INDEX_FILE" > "${INDEX_FILE}.tmp" && mv "${INDEX_FILE}.tmp" "$INDEX_FILE"
+            AFTER=$(jq length "$INDEX_FILE")
+            if [ "$BEFORE" != "$AFTER" ]; then
+              echo "🗑️ Removed index entry for deleted plugin: $FILENAME"
+            fi
+          done
           
           # 获取当前时间戳（毫秒）
           UPDATE_TIME=$(date +%s)000
@@ -202,9 +233,9 @@ jobs:
             
             echo "📝 Updating index for: $file"
             
-            # 检查文件是否存在
+            # 已删除的条目已在上方从 index 移除；此处仅处理仍存在的文件
             if [ ! -f "$file" ]; then
-              echo "   ⚠️  File $file does not exist (may have been deleted), skipping"
+              echo "   ⏭️  File $file does not exist (deleted), already handled for index"
               continue
             fi
             
