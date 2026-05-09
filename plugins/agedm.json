@@ -1,0 +1,13 @@
+{
+  "version": "1.0.0",
+  "name": "AGE动漫",
+  "iconUrl": "https://www.agedm.io/favicon.ico",
+  "baseUrl": "https://www.agedm.io/",
+  "searchUrl": "https://www.agedm.io/search?query={keyword}",
+  "searchList": "//div[2]/div/section/div/div/div/div",
+  "searchName": "//div/div[2]/h5/a",
+  "searchLink": "//div/div[2]/h5/a",
+  "lineNames": "//div[@class='video_detail_playlist_wrapper pt-4'] /ul //button",
+  "lineList": "//div[2]/div/section/div/div[2]/div[2]/div[2]/div",
+  "episode": "//ul/li/a"
+}
