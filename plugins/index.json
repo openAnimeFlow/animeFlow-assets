@@ -96,5 +96,12 @@
     "icon": "https://www.7sefun.top//pc/img/favicon.ico",
     "path": "dmbus.json",
     "updateTime": "1778315495000"
+  },
+  {
+    "name": "AGE动漫",
+    "version": "1.0.0",
+    "icon": "https://www.agedm.io/favicon.ico",
+    "path": "agedm.json",
+    "updateTime": "1778316650000"
   }
 ]
