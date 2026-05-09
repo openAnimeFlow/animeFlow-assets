@@ -1,5 +1,5 @@
 {
-  "version": "1.0.1",
+  "version": "1.0.2",
   "name": "E站",
   "iconUrl": "https://www.ezdmw.site/Public/images/icon.png",
   "baseUrl": "https://www.ezdmw.site/",
@@ -8,6 +8,6 @@
   "searchName": "//span",
   "searchLink": "/a",
   "lineNames": "//section[1]/div[starts-with(@class, 'line_button') and not(contains(concat(' ', @class, ' '), ' line_button_ban'))]",
-  "lineList": "//div[2]/div[2]/div/div/div[2]/div/div[1]/div[2]/div/div/div/ul",
-  "episode": "//li/a"
+  "lineList": "//div[4]/section[1]",
+  "episode": "//a"
 }
