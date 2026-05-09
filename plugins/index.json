@@ -75,5 +75,12 @@
     "icon": "https://omofun03.top/template/mxpro/mxtheme/images/favicon.png",
     "path": "omofun03.json",
     "updateTime": "1778313526000"
+  },
+  {
+    "name": "风铃动漫",
+    "version": "1.0.0",
+    "icon": "https://www.aafun.cc/favicon.ico",
+    "path": "aafun.json",
+    "updateTime": "1778314285000"
   }
 ]
