@@ -1,0 +1,13 @@
+{
+  "version": "1.0.0",
+  "name": "樱花动漫",
+  "iconUrl": "https://www.yinghua-tv.com/favicon.ico",
+  "baseUrl": "https://www.yinghua-tv.com/",
+  "searchUrl": "https://www.yinghua-tv.com/search_-------------.html?wd={keyword}",
+  "searchList": "//div[@class='module-items module-card-items'] /div",
+  "searchName": "/div[2] /div[1] //strong",
+  "searchLink": "/a",
+  "lineNames": "//div[@id='y-playList'] /div /span",
+  "lineList": "//div[@class='module'] //div[@class='module-play-list']",
+  "episode": "//a"
+}
