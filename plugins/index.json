@@ -96,5 +96,12 @@
     "icon": "https://www.agedm.io/favicon.ico",
     "path": "agedm.json",
     "updateTime": "1778316650000"
+  },
+  {
+    "name": "E站",
+    "version": "1.0.1",
+    "icon": "https://www.ezdmw.site/Public/images/icon.png",
+    "path": "ezdmw.json",
+    "updateTime": "1778334216000"
   }
 ]
