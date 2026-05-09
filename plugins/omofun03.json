@@ -1,0 +1,13 @@
+{
+  "version": "1.0.0",
+  "name": "omofun",
+  "iconUrl": "https://omofun03.top/template/mxpro/mxtheme/images/favicon.png",
+  "baseUrl": "https://omofun03.top/",
+  "searchUrl": "https://omofun03.top/vod/search.html?wd={keyword}",
+  "searchList": "//div[@class='module-items module-card-items'] /div",
+  "searchName": "/div[2] /div[1] //strong",
+  "searchLink": "/div[2] /div[1] //a",
+  "lineNames": "//div[@class='module-heading player-heading'] /div[1] /div /div[2] //span",
+  "lineList": "//div[@class='module-play-list']",
+  "episode": "//a"
+}
