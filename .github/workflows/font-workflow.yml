@@ -1,0 +1,45 @@
+name: Update Font Index
+
+on:
+  push:
+    paths:
+      - 'fonts-repo/**'
+    paths-ignore:
+      - 'fonts-repo/index.json'
+
+jobs:
+  update-font-index:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - name: Generate fonts-repo/index.json
+        if: ${{ !contains(github.event.head_commit.message, '[skip font-index]') }}
+        run: dart fonts-repo/script/update_index.dart
+
+      - name: Commit updated index.json
+        if: ${{ !contains(github.event.head_commit.message, '[skip font-index]') }}
+        run: |
+          INDEX_FILE="fonts-repo/index.json"
+
+          if git diff --quiet "$INDEX_FILE"; then
+            echo "No changes to $INDEX_FILE, skipping commit"
+            exit 0
+          fi
+
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          git add "$INDEX_FILE"
+          git commit -m "chore: auto-update fonts-repo index.json [skip font-index]" || exit 0
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:${{ github.ref }}
