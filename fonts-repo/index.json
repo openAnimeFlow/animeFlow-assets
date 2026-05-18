@@ -16,14 +16,5 @@
     "preview": "https://raw.githubusercontent.com/openAnimeFlow/animeFlow-assets/main/fonts-repo/fonts/Ma-Shan-Zheng/MaShanZheng-preview.ttf",
     "font": "https://raw.githubusercontent.com/openAnimeFlow/animeFlow-assets/main/fonts-repo/fonts/Ma-Shan-Zheng/MaShanZheng.ttf",
     "size": 5858048
-  },
-  {
-    "id": "ZCOOLKuaiLe",
-    "name": "ZCOOL KuaiLe 字体",
-    "family": "ZCOOLKuaiLe",
-    "author": "Liu Bingke, Yang Kang, Wu Shaojie",
-    "preview": "https://raw.githubusercontent.com/openAnimeFlow/animeFlow-assets/main/fonts-repo/fonts/ZCOOLKuaiLe/ZCOOLKuaiLe-preview.ttf",
-    "font": "https://raw.githubusercontent.com/openAnimeFlow/animeFlow-assets/main/fonts-repo/fonts/ZCOOLKuaiLe/ZCOOLKuaiLe.ttf",
-    "size": 1514968
   }
 ]
