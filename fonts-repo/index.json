@@ -1,0 +1,20 @@
+[
+  {
+    "id": "MaShanZheng",
+    "name": "Ma Shan Zheng 马山正字体",
+    "family": "MaShanZheng",
+    "author": "Ma ShanZheng",
+    "preview": "fonts/Ma-Shan-Zheng/MaShanZheng-preview.ttf",
+    "font": "fonts/Ma-Shan-Zheng/MaShanZheng.ttf",
+    "size": 5858048
+  },
+  {
+    "id": "ZCOOLKuaiLe",
+    "name": "ZCOOL KuaiLe 字体",
+    "family": "ZCOOLKuaiLe",
+    "author": "Liu Bingke, Yang Kang, Wu Shaojie",
+    "preview": "fonts/ZCOOLKuaiLe/ZCOOLKuaiLe-preview.ttf",
+    "font": "fonts/ZCOOLKuaiLe/ZCOOLKuaiLe.ttf",
+    "size": 1514968
+  }
+]
