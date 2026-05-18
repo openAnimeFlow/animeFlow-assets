@@ -1,5 +1,14 @@
 [
   {
+    "id": "JingNanYuanTi",
+    "name": "荆南圆体",
+    "family": "JingNanYuanTi",
+    "author": "やっちゃん (日本)",
+    "preview": "https://raw.githubusercontent.com/openAnimeFlow/animeFlow-assets/main/fonts-repo/fonts/jingnan/jingnan.ttf-preview.ttf",
+    "font": "https://raw.githubusercontent.com/openAnimeFlow/animeFlow-assets/main/fonts-repo/fonts/jingnan/jingnan.ttf",
+    "size": 8459780
+  },
+  {
     "id": "MaShanZheng",
     "name": "Ma Shan Zheng 马山正字体",
     "family": "MaShanZheng",
