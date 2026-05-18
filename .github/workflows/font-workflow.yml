@@ -28,6 +28,7 @@ jobs:
         run: dart fonts-repo/script/update_index.dart
 
       - name: Commit updated index.json
+        id: commit
         if: ${{ github.event_name == 'workflow_dispatch' || !contains(github.event.head_commit.message, '[skip font-index]') }}
         run: |
           INDEX_FILE="fonts-repo/index.json"
@@ -44,8 +45,18 @@ jobs:
 
           if git diff --cached --quiet; then
             echo "No changes to $INDEX_FILE, skipping commit"
+            echo "pushed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           git commit -m "chore: auto-update fonts-repo index.json [skip font-index]"
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:${{ github.ref }}
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Purge jsDelivr cache
+        if: steps.commit.outputs.pushed == 'true'
+        run: |
+          echo "Purging jsDelivr cache for fonts-repo/index.json..."
+          curl -fsSL "https://purge.jsdelivr.net/gh/openAnimeFlow/animeFlow-assets@main/fonts-repo/index.json"
+          echo ""
+          echo "jsDelivr cache purge requested"
