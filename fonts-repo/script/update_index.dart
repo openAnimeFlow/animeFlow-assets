@@ -5,6 +5,9 @@
 import 'dart:convert';
 import 'dart:io';
 
+const _rawBaseUrl =
+    'https://raw.githubusercontent.com/openAnimeFlow/animeFlow-assets/main/fonts-repo';
+
 void main() {
   // 1. 定位 fonts-repo 根目录、fonts 目录与输出的 index.json
   final repoRoot = File(Platform.script.toFilePath()).parent.parent;
@@ -98,15 +101,15 @@ void main() {
       stderr.writeln('Warning $folderName: no *-preview.ttf found');
     }
 
-    // 6. 组装索引条目（preview/font 为相对 fonts-repo 根目录的路径）
+    // 6. 组装索引条目
     entries.add({
       'id': id,
       'name': name,
       'family': id,
       'author': author,
       if (previewFile != null)
-        'preview': _repoRelativePath(previewFile, repoRoot),
-      'font': _repoRelativePath(fontFile, repoRoot),
+        'preview': _rawAssetUrl(previewFile, repoRoot),
+      'font': _rawAssetUrl(fontFile, repoRoot),
       'size': fontFile.lengthSync(),
     });
   }
@@ -146,18 +149,21 @@ String _basename(String path) {
   return segments.isEmpty ? path : segments.last;
 }
 
-/// 返回 [file] 相对于 [repoRoot] 的路径，统一使用 `/` 分隔符。
-String _repoRelativePath(File file, Directory repoRoot) {
+/// 返回 [file] 对应的 raw GitHub 完整 URL。
+String _rawAssetUrl(File file, Directory repoRoot) {
   final root = repoRoot.absolute.path;
   final full = file.absolute.path;
+  final String relative;
   if (!full.startsWith(root)) {
-    return full.replaceAll('\\', '/');
+    relative = full.replaceAll('\\', '/');
+  } else {
+    var path = full.substring(root.length);
+    if (path.startsWith(Platform.pathSeparator)) {
+      path = path.substring(Platform.pathSeparator.length);
+    } else if (path.startsWith('/')) {
+      path = path.substring(1);
+    }
+    relative = path.replaceAll('\\', '/');
   }
-  var relative = full.substring(root.length);
-  if (relative.startsWith(Platform.pathSeparator)) {
-    relative = relative.substring(Platform.pathSeparator.length);
-  } else if (relative.startsWith('/')) {
-    relative = relative.substring(1);
-  }
-  return relative.replaceAll('\\', '/');
+  return '$_rawBaseUrl/$relative';
 }
