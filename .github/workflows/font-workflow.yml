@@ -3,9 +3,8 @@ name: Update Font Index
 on:
   push:
     paths:
-      - 'fonts-repo/**'
-    paths-ignore:
-      - 'fonts-repo/index.json'
+      - 'fonts-repo/fonts/**'
+      - 'fonts-repo/script/**'
   workflow_dispatch:
 
 jobs:
