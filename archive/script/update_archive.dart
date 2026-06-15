@@ -16,7 +16,7 @@ const _bangumiLatestUrl =
 const _releaseTag = 'bangumi-anime-subject';
 const _subjectAssetName = 'subject.jsonlines';
 const _retentionDays = 365;
-final _dumpDatePattern = RegExp(r'^dump-(\d{4}-\d{2}-\d{2})');
+final _dumpDatePattern = RegExp(r'^dump-(\d{4})-(\d{2})-(\d{2})');
 
 void main() async {
   final archiveRoot =
@@ -62,18 +62,17 @@ void main() async {
     extractDir.createSync();
     await _extractZip(zipPath, extractDir.path);
 
-    final dumpDir = _findDumpDir(extractDir, dumpName);
     final subjectFile = File(
-      '${dumpDir.path}${Platform.pathSeparator}$_subjectAssetName',
+      '${extractDir.path}${Platform.pathSeparator}$_subjectAssetName',
     );
     if (!subjectFile.existsSync()) {
-      stderr.writeln('subject.jsonlines not found in ${dumpDir.path}');
+      stderr.writeln('subject.jsonlines not found in ${extractDir.path}');
       exit(1);
     }
 
     await _filterSubjectJsonlinesFile(subjectFile.path);
 
-    final files = _collectJsonlinesFiles(dumpDir);
+    final files = _collectJsonlinesFiles(extractDir);
     stdout.writeln('Uploading ${files.length} file(s) to release ...');
     final assets = await _uploadFilesToRelease(files, dumpName);
 
@@ -161,28 +160,8 @@ Future<void> _extractZip(String zipPath, String destDir) async {
   }
 }
 
-Directory _findDumpDir(Directory extractDir, String dumpName) {
-  final expected = Directory(
-    '${extractDir.path}${Platform.pathSeparator}$dumpName',
-  );
-  if (expected.existsSync()) return expected;
-
-  final subdirs = extractDir
-      .listSync()
-      .whereType<Directory>()
-      .where((d) => !d.path.endsWith('__MACOSX'))
-      .toList();
-
-  if (subdirs.length == 1) return subdirs.first;
-
-  stderr.writeln(
-    'Cannot find dump directory (expected $dumpName under ${extractDir.path})',
-  );
-  exit(1);
-}
-
-List<File> _collectJsonlinesFiles(Directory dumpDir) {
-  final files = dumpDir
+List<File> _collectJsonlinesFiles(Directory dir) {
+  final files = dir
       .listSync()
       .whereType<File>()
       .where((f) => _basename(f.path).endsWith('.jsonlines'))
@@ -199,10 +178,29 @@ String _basename(String path) {
 
 String _buildAssetName(String dumpName, String fileName) => '$dumpName-$fileName';
 
+/// 从 Release 资源名（如 dump-2026-06-09.210424Z-subject.jsonlines）解析 dump 日期。
 DateTime? _parseDumpDateFromAssetName(String assetName) {
   final match = _dumpDatePattern.firstMatch(assetName);
   if (match == null) return null;
-  return DateTime.tryParse(match.group(1)!);
+  return DateTime.utc(
+    int.parse(match.group(1)!),
+    int.parse(match.group(2)!),
+    int.parse(match.group(3)!),
+  );
+}
+
+/// 判断是否应删除该 Release 资源。
+/// 保留近 [_retentionDays] 天内的版本化资源；删除过期、旧版无前缀、当前 dump 重复项。
+String? _assetDeleteReason(String name, String dumpName, DateTime cutoffUtc) {
+  if (name.startsWith('$dumpName-')) return 'current dump re-upload';
+
+  final dumpDate = _parseDumpDateFromAssetName(name);
+  if (dumpDate == null) return 'legacy unversioned name';
+
+  if (dumpDate.isBefore(cutoffUtc)) {
+    return 'older than $_retentionDays days';
+  }
+  return null;
 }
 
 /// 流式过滤 subject.jsonlines，仅保留 type == 2（动画），原地替换。
@@ -366,33 +364,36 @@ Future<void> _deleteStaleAssets(
   Map<String, dynamic> release,
   String dumpName,
 ) async {
-  final cutoff =
-      DateTime.now().toUtc().subtract(const Duration(days: _retentionDays));
+  final cutoffUtc = DateTime.utc(
+    DateTime.now().toUtc().year,
+    DateTime.now().toUtc().month,
+    DateTime.now().toUtc().day,
+  ).subtract(const Duration(days: _retentionDays));
+
   final assets = release['assets'] as List<dynamic>? ?? [];
+  var kept = 0;
 
   for (final asset in assets) {
     final map = asset as Map<String, dynamic>;
     final name = map['name'] as String;
     final assetId = map['id'];
+    final reason = _assetDeleteReason(name, dumpName, cutoffUtc);
 
-    final dumpDate = _parseDumpDateFromAssetName(name);
-    final isLegacy = dumpDate == null;
-    final isExpired = dumpDate != null && dumpDate.isBefore(cutoff);
-    final isCurrentDump = name.startsWith('$dumpName-');
+    if (reason == null) {
+      kept++;
+      continue;
+    }
 
-    if (!isLegacy && !isExpired && !isCurrentDump) continue;
-
-    final reason = isLegacy
-        ? 'legacy name'
-        : isExpired
-            ? 'older than $_retentionDays days'
-            : 'current dump re-upload';
     stdout.writeln('Deleting asset $name ($reason, id=$assetId) ...');
     await _apiDelete(
       token,
       'https://api.github.com/repos/$repository/releases/assets/$assetId',
     );
   }
+
+  stdout.writeln(
+    'Retention: keeping $kept asset(s) within $_retentionDays days',
+  );
 }
 
 Future<Map<String, dynamic>?> _apiGet(String token, String url) async {
