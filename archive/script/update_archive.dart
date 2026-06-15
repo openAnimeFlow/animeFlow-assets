@@ -1,5 +1,6 @@
-// 检查 Bangumi Archive 更新，过滤 subject.jsonlines（仅 type=2 动画），
-// 上传到 GitHub Releases 并更新 archive/latest.json。
+// 检查 Bangumi Archive 更新，解压全部 jsonlines 文件，
+// 清洗 subject.jsonlines（仅 type=2 动画），上传到 GitHub Releases
+// 并更新 archive/latest.json。
 //
 // 运行：dart archive/script/update_archive.dart
 //
@@ -13,7 +14,9 @@ import 'dart:io';
 const _bangumiLatestUrl =
     'https://raw.githubusercontent.com/bangumi/Archive/master/aux/latest.json';
 const _releaseTag = 'bangumi-anime-subject';
-const _assetName = 'subject.jsonlines';
+const _subjectAssetName = 'subject.jsonlines';
+const _retentionDays = 365;
+final _dumpDatePattern = RegExp(r'^dump-(\d{4}-\d{2}-\d{2})');
 
 void main() async {
   final archiveRoot =
@@ -53,20 +56,32 @@ void main() async {
     );
 
     final dumpName = (remote['name'] as String).replaceAll('.zip', '');
-    final zipEntry = await _findSubjectEntry(zipPath, dumpName);
+    final extractDir = Directory(
+      '${tempDir.path}${Platform.pathSeparator}extract',
+    );
+    extractDir.createSync();
+    await _extractZip(zipPath, extractDir.path);
 
-    final filteredPath =
-        '${tempDir.path}${Platform.pathSeparator}$_assetName';
-    await _filterSubjectJsonlines(zipPath, zipEntry, filteredPath);
+    final dumpDir = _findDumpDir(extractDir, dumpName);
+    final subjectFile = File(
+      '${dumpDir.path}${Platform.pathSeparator}$_subjectAssetName',
+    );
+    if (!subjectFile.existsSync()) {
+      stderr.writeln('subject.jsonlines not found in ${dumpDir.path}');
+      exit(1);
+    }
 
-    final filteredFile = File(filteredPath);
-    final assetInfo = await _uploadToRelease(filteredFile);
+    await _filterSubjectJsonlinesFile(subjectFile.path);
+
+    final files = _collectJsonlinesFiles(dumpDir);
+    stdout.writeln('Uploading ${files.length} file(s) to release ...');
+    final assets = await _uploadFilesToRelease(files, dumpName);
 
     await _writeLatestJson(
       latestFile,
       remote: remote,
-      assetUrl: assetInfo['browser_download_url'] as String,
-      size: assetInfo['size'] as int,
+      dumpName: dumpName,
+      assets: assets,
     );
 
     stdout.writeln('Archive update completed.');
@@ -129,72 +144,80 @@ Future<void> _downloadFile(String url, String destPath) async {
   }
 }
 
-/// 在 zip 中定位 subject.jsonlines 条目路径。
-Future<String> _findSubjectEntry(String zipPath, String dumpName) async {
-  final expected = '$dumpName/subject.jsonlines';
+/// 将 zip 解压到目标目录（写入磁盘，不占用大量内存）。
+Future<void> _extractZip(String zipPath, String destDir) async {
+  stdout.writeln('Extracting zip to $destDir ...');
 
-  final List<String> entries;
+  final ProcessResult result;
   if (Platform.isWindows) {
-    final result = await Process.run('tar', ['-tf', zipPath]);
-    if (result.exitCode != 0) {
-      stderr.writeln('tar -tf failed: ${result.stderr}');
-      exit(1);
-    }
-    entries = (result.stdout as String)
-        .split('\n')
-        .map((s) => s.trim())
-        .where((s) => s.isNotEmpty)
-        .toList();
+    result = await Process.run('tar', ['-xf', zipPath, '-C', destDir]);
   } else {
-    final result = await Process.run('unzip', ['-Z1', zipPath]);
-    if (result.exitCode != 0) {
-      stderr.writeln('unzip -Z1 failed: ${result.stderr}');
-      exit(1);
-    }
-    entries = (result.stdout as String)
-        .split('\n')
-        .map((s) => s.trim())
-        .where((s) => s.isNotEmpty)
-        .toList();
+    result = await Process.run('unzip', ['-q', zipPath, '-d', destDir]);
   }
 
-  if (entries.contains(expected)) return expected;
+  if (result.exitCode != 0) {
+    stderr.writeln('Extract failed: ${result.stderr}');
+    exit(1);
+  }
+}
 
-  final match = entries.where((e) => e.endsWith('subject.jsonlines')).toList();
-  if (match.length == 1) return match.first;
+Directory _findDumpDir(Directory extractDir, String dumpName) {
+  final expected = Directory(
+    '${extractDir.path}${Platform.pathSeparator}$dumpName',
+  );
+  if (expected.existsSync()) return expected;
+
+  final subdirs = extractDir
+      .listSync()
+      .whereType<Directory>()
+      .where((d) => !d.path.endsWith('__MACOSX'))
+      .toList();
+
+  if (subdirs.length == 1) return subdirs.first;
 
   stderr.writeln(
-    'Cannot find subject.jsonlines in zip (expected $expected)',
+    'Cannot find dump directory (expected $dumpName under ${extractDir.path})',
   );
   exit(1);
 }
 
-/// 启动解压进程，将 zip 内指定条目输出到 stdout。
-Future<Process> _startZipExtract(String zipPath, String zipEntry) async {
-  if (Platform.isWindows) {
-    return Process.start('tar', ['-xOf', zipPath, zipEntry]);
-  }
-  return Process.start('unzip', ['-p', zipPath, zipEntry]);
+List<File> _collectJsonlinesFiles(Directory dumpDir) {
+  final files = dumpDir
+      .listSync()
+      .whereType<File>()
+      .where((f) => _basename(f.path).endsWith('.jsonlines'))
+      .toList();
+  files.sort((a, b) => _basename(a.path).compareTo(_basename(b.path)));
+  return files;
 }
 
-/// 流式解压并过滤 subject.jsonlines，仅保留 type == 2（动画）。
-Future<void> _filterSubjectJsonlines(
-  String zipPath,
-  String zipEntry,
-  String outputPath,
-) async {
-  stdout.writeln('Filtering $zipEntry (type == 2) ...');
+String _basename(String path) {
+  final normalized = path.replaceAll('\\', '/');
+  final segments = normalized.split('/').where((s) => s.isNotEmpty);
+  return segments.isEmpty ? path : segments.last;
+}
 
-  final unzip = await _startZipExtract(zipPath, zipEntry);
-  final stderrBuffer = <int>[];
-  unzip.stderr.listen(stderrBuffer.addAll);
+String _buildAssetName(String dumpName, String fileName) => '$dumpName-$fileName';
 
-  final output = File(outputPath).openWrite();
+DateTime? _parseDumpDateFromAssetName(String assetName) {
+  final match = _dumpDatePattern.firstMatch(assetName);
+  if (match == null) return null;
+  return DateTime.tryParse(match.group(1)!);
+}
+
+/// 流式过滤 subject.jsonlines，仅保留 type == 2（动画），原地替换。
+Future<void> _filterSubjectJsonlinesFile(String subjectPath) async {
+  stdout.writeln('Filtering $_subjectAssetName (type == 2) ...');
+
+  final input = File(subjectPath);
+  final tempPath = '$subjectPath.filtered';
+  final output = File(tempPath).openWrite();
   var total = 0;
   var kept = 0;
 
   try {
-    final lines = unzip.stdout
+    final lines = input
+        .openRead()
         .transform(utf8.decoder)
         .transform(const LineSplitter());
 
@@ -210,25 +233,22 @@ Future<void> _filterSubjectJsonlines(
         stdout.writeln('  processed $total lines, kept $kept');
       }
     }
-
-    final exitCode = await unzip.exitCode;
-    if (exitCode != 0) {
-      stderr.writeln(
-        'zip extract failed (exit $exitCode): '
-        '${utf8.decode(stderrBuffer)}',
-      );
-      exit(1);
-    }
   } finally {
     await output.close();
   }
 
+  input.deleteSync();
+  File(tempPath).renameSync(subjectPath);
+
   stdout.writeln(
-    'Filtered $kept / $total lines -> ${File(outputPath).lengthSync()} bytes',
+    'Filtered $kept / $total lines -> ${File(subjectPath).lengthSync()} bytes',
   );
 }
 
-Future<Map<String, dynamic>> _uploadToRelease(File file) async {
+Future<List<Map<String, dynamic>>> _uploadFilesToRelease(
+  List<File> files,
+  String dumpName,
+) async {
   final token = Platform.environment['GITHUB_TOKEN'];
   final repository = Platform.environment['GITHUB_REPOSITORY'];
 
@@ -244,15 +264,43 @@ Future<Map<String, dynamic>> _uploadToRelease(File file) async {
   final release = await _ensureRelease(token, repository);
   final releaseId = release['id'] as int;
 
-  await _deleteExistingAsset(token, repository, release);
+  await _deleteStaleAssets(token, repository, release, dumpName);
 
-  stdout.writeln('Uploading $_assetName to release $_releaseTag ...');
-  final uploadUrl =
-      'https://uploads.github.com/repos/$repository/releases/$releaseId/assets?name=$_assetName';
+  final uploaded = <Map<String, dynamic>>[];
+  for (final file in files) {
+    final fileName = _basename(file.path);
+    final assetName = _buildAssetName(dumpName, fileName);
+    stdout.writeln('Uploading $assetName ...');
+    final asset = await _uploadAsset(
+      token,
+      repository,
+      releaseId,
+      file,
+      assetName,
+    );
+    uploaded.add(asset);
+    stdout.writeln('  -> ${asset['browser_download_url']}');
+  }
+  return uploaded;
+}
+
+Future<Map<String, dynamic>> _uploadAsset(
+  String token,
+  String repository,
+  int releaseId,
+  File file,
+  String assetName,
+) async {
+  final uploadUrl = Uri(
+    scheme: 'https',
+    host: 'uploads.github.com',
+    path: '/repos/$repository/releases/$releaseId/assets',
+    queryParameters: {'name': assetName},
+  );
 
   final client = HttpClient();
   try {
-    final request = await client.postUrl(Uri.parse(uploadUrl));
+    final request = await client.postUrl(uploadUrl);
     request.headers.set('Authorization', 'Bearer $token');
     request.headers.set('Content-Type', 'application/octet-stream');
     request.headers.set('Accept', 'application/vnd.github+json');
@@ -263,14 +311,12 @@ Future<Map<String, dynamic>> _uploadToRelease(File file) async {
 
     if (response.statusCode != 201) {
       stderr.writeln(
-        'Upload failed: HTTP ${response.statusCode} $body',
+        'Upload $assetName failed: HTTP ${response.statusCode} $body',
       );
       exit(1);
     }
 
-    final asset = jsonDecode(body) as Map<String, dynamic>;
-    stdout.writeln('Uploaded: ${asset['browser_download_url']}');
-    return asset;
+    return jsonDecode(body) as Map<String, dynamic>;
   } finally {
     client.close(force: true);
   }
@@ -296,9 +342,10 @@ Future<Map<String, dynamic>> _ensureRelease(
     'https://api.github.com/repos/$repository/releases',
     {
       'tag_name': _releaseTag,
-      'name': 'Bangumi Anime Subject Archive',
+      'name': 'Bangumi Archive',
       'body':
-          'Filtered Bangumi subject data (type=2 anime only). '
+          'Bangumi wiki archive dump. subject.jsonlines is filtered to anime (type=2). '
+          'Assets are named as {dump}-{file}.jsonlines and retained for $_retentionDays days. '
           'Source: https://github.com/bangumi/Archive',
       'draft': false,
       'prerelease': false,
@@ -312,22 +359,39 @@ Future<Map<String, dynamic>> _ensureRelease(
   return created;
 }
 
-Future<void> _deleteExistingAsset(
+/// 删除超过保留期的资源、旧版无版本前缀的资源，以及当前 dump 的重复资源。
+Future<void> _deleteStaleAssets(
   String token,
   String repository,
   Map<String, dynamic> release,
+  String dumpName,
 ) async {
+  final cutoff =
+      DateTime.now().toUtc().subtract(const Duration(days: _retentionDays));
   final assets = release['assets'] as List<dynamic>? ?? [];
+
   for (final asset in assets) {
     final map = asset as Map<String, dynamic>;
-    if (map['name'] == _assetName) {
-      final assetId = map['id'];
-      stdout.writeln('Deleting existing asset id=$assetId ...');
-      await _apiDelete(
-        token,
-        'https://api.github.com/repos/$repository/releases/assets/$assetId',
-      );
-    }
+    final name = map['name'] as String;
+    final assetId = map['id'];
+
+    final dumpDate = _parseDumpDateFromAssetName(name);
+    final isLegacy = dumpDate == null;
+    final isExpired = dumpDate != null && dumpDate.isBefore(cutoff);
+    final isCurrentDump = name.startsWith('$dumpName-');
+
+    if (!isLegacy && !isExpired && !isCurrentDump) continue;
+
+    final reason = isLegacy
+        ? 'legacy name'
+        : isExpired
+            ? 'older than $_retentionDays days'
+            : 'current dump re-upload';
+    stdout.writeln('Deleting asset $name ($reason, id=$assetId) ...');
+    await _apiDelete(
+      token,
+      'https://api.github.com/repos/$repository/releases/assets/$assetId',
+    );
   }
 }
 
@@ -398,18 +462,41 @@ Future<void> _writeLatestJson(
   File latestFile,
   {
   required Map<String, dynamic> remote,
-  required String assetUrl,
-  required int size,
+  required String dumpName,
+  required List<Map<String, dynamic>> assets,
 }) async {
   final now = DateTime.now().toUtc();
+  final subjectAssetName = _buildAssetName(dumpName, _subjectAssetName);
+
+  final assetEntries = assets.map((asset) {
+    return {
+      'name': asset['name'],
+      'browser_download_url': asset['browser_download_url'],
+      'size': asset['size'],
+      'content_type': asset['content_type'] ?? 'application/octet-stream',
+    };
+  }).toList();
+
+  Map<String, dynamic>? subjectAsset;
+  for (final asset in assets) {
+    if (asset['name'] == subjectAssetName) {
+      subjectAsset = asset;
+      break;
+    }
+  }
+
   final content = {
     'source_updated_at': remote['updated_at'],
     'source_digest': remote['digest'],
     'source_name': remote['name'],
-    'browser_download_url': assetUrl,
-    'name': _assetName,
-    'content_type': 'application/json',
-    'size': size,
+    'dump_name': dumpName,
+    if (subjectAsset != null) ...{
+      'browser_download_url': subjectAsset['browser_download_url'],
+      'name': subjectAsset['name'],
+      'content_type': subjectAsset['content_type'] ?? 'application/json',
+      'size': subjectAsset['size'],
+    },
+    'assets': assetEntries,
     'updated_at': now.toIso8601String(),
   };
 
