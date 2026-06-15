@@ -1,6 +1,6 @@
 // 检查 Bangumi Archive 更新，解压全部 jsonlines 文件，
 // 清洗 subject.jsonlines（仅 type=2 动画），
-// 清洗 episode.jsonlines、subject-persons.jsonlines（仅保留 subject 中存在的 subject_id），
+// 清洗 episode.jsonlines、subject-persons.jsonlines、subject-relations.jsonlines（仅保留 subject 中存在的 subject_id），
 // 上传到 GitHub Releases 并更新 archive/latest.json。
 //
 // 运行：dart archive/script/update_archive.dart
@@ -18,6 +18,7 @@ const _releaseTag = 'bangumi-anime-subject';
 const _subjectAssetName = 'subject.jsonlines';
 const _episodeAssetName = 'episode.jsonlines';
 const _subjectPersonsAssetName = 'subject-persons.jsonlines';
+const _subjectRelationsAssetName = 'subject-relations.jsonlines';
 const _retentionDays = 365;
 final _dumpDatePattern = RegExp(r'^dump-(\d{4})-(\d{2})-(\d{2})');
 
@@ -83,6 +84,11 @@ void main() async {
     await _filterJsonlinesBySubjectIdIfExists(
       extractDir,
       _subjectPersonsAssetName,
+      keptSubjectIds,
+    );
+    await _filterJsonlinesBySubjectIdIfExists(
+      extractDir,
+      _subjectRelationsAssetName,
       keptSubjectIds,
     );
 
@@ -424,7 +430,7 @@ Future<Map<String, dynamic>> _ensureRelease(
       'name': 'Bangumi Archive',
       'body':
           'Bangumi wiki archive dump. subject.jsonlines is filtered to anime (type=2); '
-          'episode.jsonlines and subject-persons.jsonlines keep only rows whose subject_id exists in the filtered subjects. '
+          'episode.jsonlines, subject-persons.jsonlines and subject-relations.jsonlines keep only rows whose subject_id exists in the filtered subjects. '
           'Assets are named as {dump}-{file}.jsonlines and retained for $_retentionDays days. '
           'Source: https://github.com/bangumi/Archive',
       'draft': false,
