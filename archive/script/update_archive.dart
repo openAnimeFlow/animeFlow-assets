@@ -1,6 +1,6 @@
 // 检查 Bangumi Archive 更新，解压全部 jsonlines 文件，
 // 清洗 subject.jsonlines（仅 type=2 动画），
-// 清洗 episode.jsonlines（仅保留 subject 中存在的 subject_id），
+// 清洗 episode.jsonlines、subject-persons.jsonlines（仅保留 subject 中存在的 subject_id），
 // 上传到 GitHub Releases 并更新 archive/latest.json。
 //
 // 运行：dart archive/script/update_archive.dart
@@ -17,6 +17,7 @@ const _bangumiLatestUrl =
 const _releaseTag = 'bangumi-anime-subject';
 const _subjectAssetName = 'subject.jsonlines';
 const _episodeAssetName = 'episode.jsonlines';
+const _subjectPersonsAssetName = 'subject-persons.jsonlines';
 const _retentionDays = 365;
 final _dumpDatePattern = RegExp(r'^dump-(\d{4})-(\d{2})-(\d{2})');
 
@@ -74,14 +75,16 @@ void main() async {
 
     final keptSubjectIds = await _filterSubjectJsonlinesFile(subjectFile.path);
 
-    final episodeFile = File(
-      '${extractDir.path}${Platform.pathSeparator}$_episodeAssetName',
+    await _filterJsonlinesBySubjectIdIfExists(
+      extractDir,
+      _episodeAssetName,
+      keptSubjectIds,
     );
-    if (episodeFile.existsSync()) {
-      await _filterEpisodeJsonlinesFile(episodeFile.path, keptSubjectIds);
-    } else {
-      stdout.writeln('$_episodeAssetName not found, skipping episode filter');
-    }
+    await _filterJsonlinesBySubjectIdIfExists(
+      extractDir,
+      _subjectPersonsAssetName,
+      keptSubjectIds,
+    );
 
     final files = _collectJsonlinesFiles(extractDir);
     stdout.writeln('Uploading ${files.length} file(s) to release ...');
@@ -215,7 +218,7 @@ String? _assetDeleteReason(String name, String dumpName, DateTime cutoffUtc) {
 }
 
 /// 流式过滤 subject.jsonlines，仅保留 type == 2（动画），原地替换。
-/// 返回保留条目的 subject id 集合，供 episode 过滤使用。
+/// 返回保留条目的 subject id 集合，供关联表过滤使用。
 Future<Set<int>> _filterSubjectJsonlinesFile(String subjectPath) async {
   stdout.writeln('Filtering $_subjectAssetName (type == 2) ...');
 
@@ -259,17 +262,33 @@ Future<Set<int>> _filterSubjectJsonlinesFile(String subjectPath) async {
   return keptIds;
 }
 
-/// 流式过滤 episode.jsonlines，仅保留 subject_id 在 [subjectIds] 中的条目。
-Future<void> _filterEpisodeJsonlinesFile(
-  String episodePath,
+Future<void> _filterJsonlinesBySubjectIdIfExists(
+  Directory extractDir,
+  String assetName,
   Set<int> subjectIds,
 ) async {
+  final file = File(
+    '${extractDir.path}${Platform.pathSeparator}$assetName',
+  );
+  if (!file.existsSync()) {
+    stdout.writeln('$assetName not found, skipping filter');
+    return;
+  }
+  await _filterJsonlinesBySubjectId(file.path, subjectIds, assetName);
+}
+
+/// 流式过滤 jsonlines，仅保留 subject_id 在 [subjectIds] 中的条目。
+Future<void> _filterJsonlinesBySubjectId(
+  String filePath,
+  Set<int> subjectIds,
+  String assetName,
+) async {
   stdout.writeln(
-    'Filtering $_episodeAssetName (subject_id in ${subjectIds.length} subjects) ...',
+    'Filtering $assetName (subject_id in ${subjectIds.length} subjects) ...',
   );
 
-  final input = File(episodePath);
-  final tempPath = '$episodePath.filtered';
+  final input = File(filePath);
+  final tempPath = '$filePath.filtered';
   final output = File(tempPath).openWrite();
   var total = 0;
   var kept = 0;
@@ -298,10 +317,10 @@ Future<void> _filterEpisodeJsonlinesFile(
   }
 
   input.deleteSync();
-  File(tempPath).renameSync(episodePath);
+  File(tempPath).renameSync(filePath);
 
   stdout.writeln(
-    'Filtered $kept / $total lines -> ${File(episodePath).lengthSync()} bytes',
+    'Filtered $kept / $total lines -> ${File(filePath).lengthSync()} bytes',
   );
 }
 
@@ -405,7 +424,7 @@ Future<Map<String, dynamic>> _ensureRelease(
       'name': 'Bangumi Archive',
       'body':
           'Bangumi wiki archive dump. subject.jsonlines is filtered to anime (type=2); '
-          'episode.jsonlines keeps only episodes whose subject_id exists in the filtered subjects. '
+          'episode.jsonlines and subject-persons.jsonlines keep only rows whose subject_id exists in the filtered subjects. '
           'Assets are named as {dump}-{file}.jsonlines and retained for $_retentionDays days. '
           'Source: https://github.com/bangumi/Archive',
       'draft': false,
