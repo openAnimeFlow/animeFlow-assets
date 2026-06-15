@@ -1,0 +1,51 @@
+name: Update Bangumi Archive
+
+on:
+  schedule:
+    # 每天 UTC 22:00 = 北京时间次日 06:00
+    - cron: '0 22 * * *'
+  workflow_dispatch:
+
+jobs:
+  update-archive:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - name: Update bangumi anime archive
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: dart archive/script/update_archive.dart
+
+      - name: Commit updated latest.json
+        run: |
+          INDEX_FILE="archive/latest.json"
+
+          if [ ! -f "$INDEX_FILE" ]; then
+            echo "No changes to archive, skipping commit"
+            exit 0
+          fi
+
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          git add "$INDEX_FILE"
+
+          if git diff --cached --quiet; then
+            echo "No changes to $INDEX_FILE, skipping commit"
+            exit 0
+          fi
+
+          git commit -m "chore: update bangumi anime archive [skip archive]"
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:${{ github.ref }}
