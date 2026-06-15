@@ -1,6 +1,7 @@
 // 检查 Bangumi Archive 更新，解压全部 jsonlines 文件，
-// 清洗 subject.jsonlines（仅 type=2 动画），上传到 GitHub Releases
-// 并更新 archive/latest.json。
+// 清洗 subject.jsonlines（仅 type=2 动画），
+// 清洗 episode.jsonlines（仅保留 subject 中存在的 subject_id），
+// 上传到 GitHub Releases 并更新 archive/latest.json。
 //
 // 运行：dart archive/script/update_archive.dart
 //
@@ -15,6 +16,7 @@ const _bangumiLatestUrl =
     'https://raw.githubusercontent.com/bangumi/Archive/master/aux/latest.json';
 const _releaseTag = 'bangumi-anime-subject';
 const _subjectAssetName = 'subject.jsonlines';
+const _episodeAssetName = 'episode.jsonlines';
 const _retentionDays = 365;
 final _dumpDatePattern = RegExp(r'^dump-(\d{4})-(\d{2})-(\d{2})');
 
@@ -70,7 +72,16 @@ void main() async {
       exit(1);
     }
 
-    await _filterSubjectJsonlinesFile(subjectFile.path);
+    final keptSubjectIds = await _filterSubjectJsonlinesFile(subjectFile.path);
+
+    final episodeFile = File(
+      '${extractDir.path}${Platform.pathSeparator}$_episodeAssetName',
+    );
+    if (episodeFile.existsSync()) {
+      await _filterEpisodeJsonlinesFile(episodeFile.path, keptSubjectIds);
+    } else {
+      stdout.writeln('$_episodeAssetName not found, skipping episode filter');
+    }
 
     final files = _collectJsonlinesFiles(extractDir);
     stdout.writeln('Uploading ${files.length} file(s) to release ...');
@@ -204,12 +215,14 @@ String? _assetDeleteReason(String name, String dumpName, DateTime cutoffUtc) {
 }
 
 /// 流式过滤 subject.jsonlines，仅保留 type == 2（动画），原地替换。
-Future<void> _filterSubjectJsonlinesFile(String subjectPath) async {
+/// 返回保留条目的 subject id 集合，供 episode 过滤使用。
+Future<Set<int>> _filterSubjectJsonlinesFile(String subjectPath) async {
   stdout.writeln('Filtering $_subjectAssetName (type == 2) ...');
 
   final input = File(subjectPath);
   final tempPath = '$subjectPath.filtered';
   final output = File(tempPath).openWrite();
+  final keptIds = <int>{};
   var total = 0;
   var kept = 0;
 
@@ -226,6 +239,8 @@ Future<void> _filterSubjectJsonlinesFile(String subjectPath) async {
       if (obj['type'] == 2) {
         output.writeln(line);
         kept++;
+        final id = obj['id'];
+        if (id is int) keptIds.add(id);
       }
       if (total % 100000 == 0) {
         stdout.writeln('  processed $total lines, kept $kept');
@@ -240,6 +255,53 @@ Future<void> _filterSubjectJsonlinesFile(String subjectPath) async {
 
   stdout.writeln(
     'Filtered $kept / $total lines -> ${File(subjectPath).lengthSync()} bytes',
+  );
+  return keptIds;
+}
+
+/// 流式过滤 episode.jsonlines，仅保留 subject_id 在 [subjectIds] 中的条目。
+Future<void> _filterEpisodeJsonlinesFile(
+  String episodePath,
+  Set<int> subjectIds,
+) async {
+  stdout.writeln(
+    'Filtering $_episodeAssetName (subject_id in ${subjectIds.length} subjects) ...',
+  );
+
+  final input = File(episodePath);
+  final tempPath = '$episodePath.filtered';
+  final output = File(tempPath).openWrite();
+  var total = 0;
+  var kept = 0;
+
+  try {
+    final lines = input
+        .openRead()
+        .transform(utf8.decoder)
+        .transform(const LineSplitter());
+
+    await for (final line in lines) {
+      if (line.isEmpty) continue;
+      total++;
+      final obj = jsonDecode(line) as Map<String, dynamic>;
+      final subjectId = obj['subject_id'];
+      if (subjectId is int && subjectIds.contains(subjectId)) {
+        output.writeln(line);
+        kept++;
+      }
+      if (total % 100000 == 0) {
+        stdout.writeln('  processed $total lines, kept $kept');
+      }
+    }
+  } finally {
+    await output.close();
+  }
+
+  input.deleteSync();
+  File(tempPath).renameSync(episodePath);
+
+  stdout.writeln(
+    'Filtered $kept / $total lines -> ${File(episodePath).lengthSync()} bytes',
   );
 }
 
@@ -342,7 +404,8 @@ Future<Map<String, dynamic>> _ensureRelease(
       'tag_name': _releaseTag,
       'name': 'Bangumi Archive',
       'body':
-          'Bangumi wiki archive dump. subject.jsonlines is filtered to anime (type=2). '
+          'Bangumi wiki archive dump. subject.jsonlines is filtered to anime (type=2); '
+          'episode.jsonlines keeps only episodes whose subject_id exists in the filtered subjects. '
           'Assets are named as {dump}-{file}.jsonlines and retained for $_retentionDays days. '
           'Source: https://github.com/bangumi/Archive',
       'draft': false,
