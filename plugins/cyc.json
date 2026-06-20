@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.0.1",
   "name": "次元城动漫",
   "iconUrl": "https://www.cycani.org/upload/site/20240319-1/67656e504da1f0c61513066dcea769fb.png",
   "baseUrl": "https://www.cycani.org",
@@ -9,5 +9,12 @@
   "searchLink": "//div[@class='detail-info rel flex-auto lightSpeedIn'] /az",
   "lineNames": "//div[@class='swiper-wrapper'] //a",
   "lineList": "//div[@class='box-width cor5'] /div[2] /div[2]",
-  "episode": "//li"
+  "episode": "//li",
+  "antiCrawlerConfig": {
+    "enabled": true,
+    "captchaType": 1,
+    "captchaImage": "//img[@class='ds-verify-img']",
+    "captchaInput": "//div[4]/div[2]/div/div/input",
+    "captchaButton": "//div[4]/div[2]/button"
+  }
 }
