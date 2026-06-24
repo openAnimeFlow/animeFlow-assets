@@ -41,16 +41,26 @@ void main() {
     });
   }
 
-  // 3. 按文件名排序并写入 index.json
+  // 3. 按文件名排序
   entries.sort((a, b) => (a['name'] as String).compareTo(b['name'] as String));
 
-  final content = '${const JsonEncoder.withIndent('  ').convert(entries)}\n';
+  // 4. 组装包含时间戳的索引对象
+  final now = DateTime.now().toUtc();
+  final lastUpdated = now.toIso8601String();
+
+  final index = <String, dynamic>{
+    'lastUpdated': lastUpdated,
+    'images': entries,
+  };
+
+  // 5. 写入 index.json
+  final content = '${const JsonEncoder.withIndent('  ').convert(index)}\n';
 
   indexFile.createSync(recursive: true);
   indexFile.writeAsStringSync(content);
 
   stdout.writeln(
-    'Updated ${entries.length} image(s) in ${indexFile.path}',
+    'Updated ${entries.length} image(s) in ${indexFile.path} (lastUpdated: $lastUpdated)',
   );
 }
 
