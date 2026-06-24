@@ -1,0 +1,62 @@
+name: Update Background Image Index
+
+on:
+  push:
+    paths:
+      - 'background-image/image/**'
+      - 'background-image/script/**'
+  workflow_dispatch:
+
+jobs:
+  update-index:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - name: Generate background-image/index.json
+        if: ${{ github.event_name == 'workflow_dispatch' || !contains(github.event.head_commit.message, '[skip bg-index]') }}
+        run: dart background-image/script/update_index.dart
+
+      - name: Commit updated index.json
+        id: commit
+        if: ${{ github.event_name == 'workflow_dispatch' || !contains(github.event.head_commit.message, '[skip bg-index]') }}
+        run: |
+          INDEX_FILE="background-image/index.json"
+
+          if [ ! -f "$INDEX_FILE" ]; then
+            echo "Error: $INDEX_FILE was not generated"
+            exit 1
+          fi
+
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          git add "$INDEX_FILE"
+
+          if git diff --cached --quiet; then
+            echo "No changes to $INDEX_FILE, skipping commit"
+            echo "pushed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git commit -m "chore: auto-update background-image index.json [skip bg-index]"
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:${{ github.ref }}
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Purge jsDelivr cache
+        if: steps.commit.outputs.pushed == 'true'
+        run: |
+          echo "Purging jsDelivr cache for background-image/index.json..."
+          curl -fsSL "https://purge.jsdelivr.net/gh/openAnimeFlow/animeFlow-assets@main/background-image/index.json"
+          echo ""
+          echo "jsDelivr cache purge requested"
