@@ -19,8 +19,6 @@ const _subjectAssetName = 'subject.jsonlines';
 const _episodeAssetName = 'episode.jsonlines';
 const _subjectPersonsAssetName = 'subject-persons.jsonlines';
 const _subjectRelationsAssetName = 'subject-relations.jsonlines';
-const _retentionDays = 365;
-final _dumpDatePattern = RegExp(r'^dump-(\d{4})-(\d{2})-(\d{2})');
 
 void main() async {
   final archiveRoot =
@@ -198,31 +196,6 @@ String _basename(String path) {
 
 String _buildAssetName(String dumpName, String fileName) => '$dumpName-$fileName';
 
-/// 从 Release 资源名（如 dump-2026-06-09.210424Z-subject.jsonlines）解析 dump 日期。
-DateTime? _parseDumpDateFromAssetName(String assetName) {
-  final match = _dumpDatePattern.firstMatch(assetName);
-  if (match == null) return null;
-  return DateTime.utc(
-    int.parse(match.group(1)!),
-    int.parse(match.group(2)!),
-    int.parse(match.group(3)!),
-  );
-}
-
-/// 判断是否应删除该 Release 资源。
-/// 保留近 [_retentionDays] 天内的版本化资源；删除过期、旧版无前缀、当前 dump 重复项。
-String? _assetDeleteReason(String name, String dumpName, DateTime cutoffUtc) {
-  if (name.startsWith('$dumpName-')) return 'current dump re-upload';
-
-  final dumpDate = _parseDumpDateFromAssetName(name);
-  if (dumpDate == null) return 'legacy unversioned name';
-
-  if (dumpDate.isBefore(cutoffUtc)) {
-    return 'older than $_retentionDays days';
-  }
-  return null;
-}
-
 /// 流式过滤 subject.jsonlines，仅保留 type == 2（动画），原地替换。
 /// 返回保留条目的 subject id 集合，供关联表过滤使用。
 Future<Set<int>> _filterSubjectJsonlinesFile(String subjectPath) async {
@@ -349,7 +322,7 @@ Future<List<Map<String, dynamic>>> _uploadFilesToRelease(
   final release = await _ensureRelease(token, repository);
   final releaseId = release['id'] as int;
 
-  await _deleteStaleAssets(token, repository, release, dumpName);
+  await _deleteAllReleaseAssets(token, repository, release);
 
   final uploaded = <Map<String, dynamic>>[];
   for (final file in files) {
@@ -431,7 +404,7 @@ Future<Map<String, dynamic>> _ensureRelease(
       'body':
           'Bangumi wiki archive dump. subject.jsonlines is filtered to anime (type=2); '
           'episode.jsonlines, subject-persons.jsonlines and subject-relations.jsonlines keep only rows whose subject_id exists in the filtered subjects. '
-          'Assets are named as {dump}-{file}.jsonlines and retained for $_retentionDays days. '
+          'Assets are named as {dump}-{file}.jsonlines. '
           'Source: https://github.com/bangumi/Archive',
       'draft': false,
       'prerelease': false,
@@ -445,43 +418,28 @@ Future<Map<String, dynamic>> _ensureRelease(
   return created;
 }
 
-/// 删除超过保留期的资源、旧版无版本前缀的资源，以及当前 dump 的重复资源。
-Future<void> _deleteStaleAssets(
+/// 删除 Release 中现有的全部资源，确保每次上传都是全量替换。
+Future<void> _deleteAllReleaseAssets(
   String token,
   String repository,
   Map<String, dynamic> release,
-  String dumpName,
 ) async {
-  final cutoffUtc = DateTime.utc(
-    DateTime.now().toUtc().year,
-    DateTime.now().toUtc().month,
-    DateTime.now().toUtc().day,
-  ).subtract(const Duration(days: _retentionDays));
-
   final assets = release['assets'] as List<dynamic>? ?? [];
-  var kept = 0;
+  if (assets.isEmpty) {
+    stdout.writeln('Release already has no assets to delete');
+    return;
+  }
 
   for (final asset in assets) {
     final map = asset as Map<String, dynamic>;
     final name = map['name'] as String;
     final assetId = map['id'];
-    final reason = _assetDeleteReason(name, dumpName, cutoffUtc);
-
-    if (reason == null) {
-      kept++;
-      continue;
-    }
-
-    stdout.writeln('Deleting asset $name ($reason, id=$assetId) ...');
+    stdout.writeln('Deleting asset $name (id=$assetId) ...');
     await _apiDelete(
       token,
       'https://api.github.com/repos/$repository/releases/assets/$assetId',
     );
   }
-
-  stdout.writeln(
-    'Retention: keeping $kept asset(s) within $_retentionDays days',
-  );
 }
 
 Future<Map<String, dynamic>?> _apiGet(String token, String url) async {
