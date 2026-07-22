@@ -14,13 +14,6 @@
     "updateTime": "1782496674414"
   },
   {
-    "name": "enlie",
-    "version": "1.0.0",
-    "icon": "https://enlienli.link/template/mxpro/mxtheme/images/favicon.png",
-    "path": "enlie.json",
-    "updateTime": "1773473163000"
-  },
-  {
     "name": "girigiri愛動漫",
     "version": "1.0.9",
     "icon": "https://ani.girigirilove.com/guanggao/fdd2694db66628a9deadd86e50aedd43.png",
@@ -56,13 +49,6 @@
     "updateTime": "1778308110000"
   },
   {
-    "name": "omofun",
-    "version": "1.0.0",
-    "icon": "https://omofun03.top/template/mxpro/mxtheme/images/favicon.png",
-    "path": "omofun03.json",
-    "updateTime": "1778313526000"
-  },
-  {
     "name": "风铃动漫",
     "version": "1.0.0",
     "icon": "https://www.aafun.cc/favicon.ico",
@@ -82,13 +68,6 @@
     "icon": "https://www.7sefun.top//pc/img/favicon.ico",
     "path": "dmbus.json",
     "updateTime": "1778315495000"
-  },
-  {
-    "name": "次元城动漫",
-    "version": "1.0.6",
-    "icon": "https://www.cycani.org/upload/site/20240319-1/67656e504da1f0c61513066dcea769fb.png",
-    "path": "cyc.json",
-    "updateTime": "1782493150199"
   },
   {
     "name": "橘子动漫",
