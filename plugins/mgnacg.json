@@ -1,0 +1,13 @@
+{
+  "version": "1.0.0",
+  "name": "橘子动漫",
+  "iconUrl": "https://r2img.nanoacg.com/favicon.png",
+  "baseUrl": "https://www.mgnacg.com/",
+  "searchUrl": "https://www.mgnacg.com/search/-------------/?wd={keyword}",
+  "searchList": "//div[@class='public-list-box search-box flex rel']",
+  "searchName": "/div[3] /div[1] /div[1]",
+  "searchLink": "/div[3] /div[2] /a[1]",
+  "lineNames": "//div[@class='box-width cor5'] /div[2] //div[@class='swiper-wrapper'] //a",
+  "lineList": "//div[@class='box-width cor5'] /div[2] /div[2] //ul",
+  "episode": "//a"
+}
