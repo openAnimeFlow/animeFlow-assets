@@ -96,5 +96,12 @@
     "icon": "https://r2img.nanoacg.com/favicon.png",
     "path": "mgnacg.json",
     "updateTime": "1784723537831"
+  },
+  {
+    "name": "mutefun",
+    "version": "1.0.0",
+    "icon": "https://www.mutefun.tv/upload/mxprocms/20220822-1/e68e718ceae9622e4646ca725d182831.png",
+    "path": "mutefun.json",
+    "updateTime": "1784725432222"
   }
 ]
