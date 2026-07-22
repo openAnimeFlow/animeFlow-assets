@@ -89,5 +89,12 @@
     "icon": "https://www.cycani.org/upload/site/20240319-1/67656e504da1f0c61513066dcea769fb.png",
     "path": "cyc.json",
     "updateTime": "1782493150199"
+  },
+  {
+    "name": "橘子动漫",
+    "version": "1.0.0",
+    "icon": "https://r2img.nanoacg.com/favicon.png",
+    "path": "mgnacg.json",
+    "updateTime": "1784723350162"
   }
 ]
