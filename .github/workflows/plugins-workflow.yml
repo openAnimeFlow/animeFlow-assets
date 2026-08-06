@@ -21,6 +21,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@v1
@@ -39,6 +40,42 @@ jobs:
           PLUGIN_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
           PLUGIN_DELETED_FILES: ${{ steps.changed-files.outputs.deleted_files }}
         run: dart plugins/script/validate_plugins.dart
+
+      - name: Upload changed source sites
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        env:
+          ANIME_FLOW_APP_ID: ${{ secrets.ANIME_FLOW_APP_ID }}
+          ANIME_FLOW_SECRET: ${{ secrets.ANIME_FLOW_SECRET }}
+          SOURCE_SITE_API_URL: ${{ secrets.SOURCE_SITE_API_URL }}
+        run: |
+          mapfile -t upload_files < <(
+            git diff --name-only --diff-filter=AM "${{ github.event.before }}" "${{ github.sha }}" -- 'plugins/*.json' |
+              grep -Fxv 'plugins/index.json' || true
+          )
+
+          if [ "${#upload_files[@]}" -eq 0 ]; then
+            echo "No source-site JSON files to upload"
+            exit 0
+          fi
+
+          dart plugins/script/upload_source_sites.dart "${upload_files[@]}"
+
+      - name: Delete removed source sites
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        env:
+          ANIME_FLOW_APP_ID: ${{ secrets.ANIME_FLOW_APP_ID }}
+          ANIME_FLOW_SECRET: ${{ secrets.ANIME_FLOW_SECRET }}
+          SOURCE_SITE_API_URL: ${{ secrets.SOURCE_SITE_API_URL }}
+        run: |
+          mapfile -t deleted_files < <(
+            git diff --name-only --diff-filter=D "${{ github.event.before }}" "${{ github.sha }}" -- 'plugins/*.json' |
+              grep -Fxv 'plugins/index.json' || true
+          )
+
+          for deleted_file in "${deleted_files[@]}"; do
+            base_url="$(git show "${{ github.event.before }}:$deleted_file" | python3 -c 'import json, sys; print(json.load(sys.stdin)["baseUrl"])')"
+            dart plugins/script/upload_source_sites.dart --delete-base-url "$base_url"
+          done
 
       - name: Update plugins/index.json
         if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip index]')) }}
