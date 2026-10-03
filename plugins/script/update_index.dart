@@ -61,20 +61,24 @@ void main() {
     final name = plugin['name'] as String? ?? '';
     final version = plugin['version'] as String? ?? '';
     final icon = plugin['iconUrl'] as String? ?? '';
+    final api = plugin['api']?.toString().trim() ?? '';
 
     stdout.writeln('Updating index for: $file');
     stdout.writeln('   Name: $name');
     stdout.writeln('   Version: $version');
     stdout.writeln('   Icon: $icon');
+    stdout.writeln('   Api: $api');
     stdout.writeln('   Path: $path');
     stdout.writeln('   UpdateTime: $updateTime');
 
-    final entry = {
+    final entry = <String, dynamic>{
       'name': name,
       'version': version,
       'icon': icon,
       'path': path,
       'updateTime': updateTime,
+      // 客户端据此判断规则是否需要更高版本；未声明时不出现在目录里。
+      if (api.isNotEmpty) 'api': api,
     };
 
     final idx = index.indexWhere(

@@ -14,6 +14,21 @@ const requiredStringFields = [
   'episode',
 ];
 
+/// 可选字段：不参与必填校验，但也不应被当作「未知字段」提醒。
+///
+/// - `api`：规则要求的客户端规则 API 级别
+/// - 其余为 API 模式 / 反爬相关配置
+const optionalFields = [
+  'api',
+  'antiCrawlerConfig',
+  'searchMode',
+  'chapterMode',
+  'searchApiConfig',
+  'chapterApiConfig',
+];
+
+const knownFields = <String>[...requiredStringFields, ...optionalFields];
+
 final _semverPattern = RegExp(r'^[0-9]+\.[0-9]+\.[0-9]+$');
 final _httpUrlPattern = RegExp(r'^https?://');
 
@@ -52,8 +67,20 @@ PluginValidation validatePluginJson(
   }
 
   for (final key in json.keys) {
-    if (!requiredStringFields.contains(key)) {
+    if (!knownFields.contains(key)) {
       warnings.add('$fileLabel: extra field "$key" found (not in template)');
+    }
+  }
+
+  // api 缺省时客户端按兼容处理；一旦声明就必须是有效的正整数。
+  final api = json['api'];
+  if (api != null) {
+    final raw = api.toString().trim();
+    final parsed = int.tryParse(raw);
+    if (parsed == null || parsed < 1) {
+      errors.add(
+        '$fileLabel: field "api" must be a positive integer, got: \'$raw\'',
+      );
     }
   }
 
