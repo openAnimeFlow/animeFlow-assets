@@ -62,5 +62,13 @@
     "path": "age.json",
     "updateTime": "1791033941970",
     "api": "1"
+  },
+  {
+    "name": "MX动漫",
+    "version": "1.0.0",
+    "icon": "https://www.dcc3.com/favicon.ico",
+    "path": "mxdm.json",
+    "updateTime": "1791065388104",
+    "api": "1"
   }
 ]
