@@ -62,13 +62,5 @@
     "path": "age.json",
     "updateTime": "1791033941970",
     "api": "1"
-  },
-  {
-    "name": "稀饭动漫",
-    "version": "1.2.1",
-    "icon": "https://anime.xifanacg.com/upload/site/20240308-1/813e41f81d6f85bfd7a44bf8a813f9e5.png",
-    "path": "xfdm.json",
-    "updateTime": "1791033941970",
-    "api": "1"
   }
 ]
