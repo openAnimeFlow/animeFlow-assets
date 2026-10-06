@@ -1,0 +1,14 @@
+{
+  "api": "1",
+  "version": "1.0.0",
+  "name": "嘀嗒影视",
+  "iconUrl": "https://www.didahd.xyz/template/mytheme/statics/img/favicon.ico",
+  "baseUrl": "https://www.didahd.xyz/",
+  "searchUrl": "https://www.didahd.xyz/search/-------------.html?wd={keyword}&submit=",
+  "searchList": "//ul[@id='searchList'] /li",
+  "searchName": "/div[2] /h4 /a",
+  "searchLink": "/div[2] /h4 /a",
+  "lineNames": "//div[2]/div[2]/div/div[1]/div/div[1] //ul //a",
+  "lineList": "//div[2]/div[2]/div/div[1]/div/div[2] //ul",
+  "episode": "//a"
+}
