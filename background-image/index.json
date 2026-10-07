@@ -1,15 +1,10 @@
 {
-  "lastUpdated": "2026-09-02T15:43:44.868144Z",
+  "lastUpdated": "2026-10-07T05:58:45.208942Z",
   "images": [
     {
       "name": "ANIME-PICTURES.NET_-_450186-1366x768-original-niya-bounin-tidsean-long+hair-looking+at+viewer.png",
       "url": "https://raw.githubusercontent.com/openAnimeFlow/animeFlow-assets/main/background-image/image/ANIME-PICTURES.NET_-_450186-1366x768-original-niya-bounin-tidsean-long+hair-looking+at+viewer.png",
       "size": 3167992
-    },
-    {
-      "name": "ANIME-PICTURES.NET_-_463785-896x504-vocaloid-hatsune+miku-gifinterest-single-long+hair-fringe.gif",
-      "url": "https://raw.githubusercontent.com/openAnimeFlow/animeFlow-assets/main/background-image/image/ANIME-PICTURES.NET_-_463785-896x504-vocaloid-hatsune+miku-gifinterest-single-long+hair-fringe.gif",
-      "size": 3753973
     },
     {
       "name": "ANIME-PICTURES.NET_-_533657-2039x1274-vocaloid-hatsune+miku-asahi+kuroi-single-looking+at+viewer-fringe.webp",
@@ -22,9 +17,19 @@
       "size": 1087179
     },
     {
+      "name": "ANIME-PICTURES.NET_-_542854-3976x2146-5+nenme+no+houkago-kantoku-single-fringe-blush-highres.jpg",
+      "url": "https://raw.githubusercontent.com/openAnimeFlow/animeFlow-assets/main/background-image/image/ANIME-PICTURES.NET_-_542854-3976x2146-5+nenme+no+houkago-kantoku-single-fringe-blush-highres.jpg",
+      "size": 1291257
+    },
+    {
       "name": "ANIME-PICTURES.NET_-_545031-3000x1687-azur+lane-akagi+(azur+lane)-kaga+(azur+lane)-watao-long+hair-looking+at+viewer.png",
       "url": "https://raw.githubusercontent.com/openAnimeFlow/animeFlow-assets/main/background-image/image/ANIME-PICTURES.NET_-_545031-3000x1687-azur+lane-akagi+(azur+lane)-kaga+(azur+lane)-watao-long+hair-looking+at+viewer.png",
       "size": 4686910
+    },
+    {
+      "name": "ANIME-PICTURES.NET_-_554164-1200x1200-darling+in+the+franxx-studio+trigger-ichigo+(darling+in+the+franxx)-sbel02-single-looking+at+viewer.jpg",
+      "url": "https://raw.githubusercontent.com/openAnimeFlow/animeFlow-assets/main/background-image/image/ANIME-PICTURES.NET_-_554164-1200x1200-darling+in+the+franxx-studio+trigger-ichigo+(darling+in+the+franxx)-sbel02-single-looking+at+viewer.jpg",
+      "size": 210757
     },
     {
       "name": "ANIME-PICTURES.NET_-_566399-1920x1080-azur+lane-illustrious+(azur+lane)-unicorn+(azur+lane)-enterprise+(azur+lane)-ping+hai+(azur+lane)-victorious+(azur+lane).jpg",
