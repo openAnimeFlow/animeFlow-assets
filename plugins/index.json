@@ -70,5 +70,13 @@
     "path": "mxdm.json",
     "updateTime": "1791065388104",
     "api": "1"
+  },
+  {
+    "name": "嘀嗒影视",
+    "version": "1.0.0",
+    "icon": "https://www.didahd.xyz/template/mytheme/statics/img/favicon.ico",
+    "path": "didahd.json",
+    "updateTime": "1791327811606",
+    "api": "1"
   }
 ]
