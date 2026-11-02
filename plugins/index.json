@@ -78,5 +78,13 @@
     "path": "didahd.json",
     "updateTime": "1791327811606",
     "api": "1"
+  },
+  {
+    "name": "路慢慢动漫",
+    "version": "1.0.0",
+    "icon": "https://www.lmm85.com/template/jable/statics/icon/favicon-32x32.png",
+    "path": "lmm.json",
+    "updateTime": "1793622049240",
+    "api": "3"
   }
 ]
