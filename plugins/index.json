@@ -86,5 +86,13 @@
     "path": "lmm.json",
     "updateTime": "1793622049240",
     "api": "3"
+  },
+  {
+    "name": "月之祠",
+    "version": "1.0.0",
+    "icon": "https://www.moonci.com/template/conch/asset/img/favicon.png",
+    "path": "moonci.json",
+    "updateTime": "1793627162343",
+    "api": "1"
   }
 ]
