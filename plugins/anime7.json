@@ -1,0 +1,14 @@
+{
+  "api": "1",
+  "version": "1.0.0",
+  "name": "anime7",
+  "iconUrl": "https://ani7.b-cdn.net/upload/logo/icon.png",
+  "baseUrl": "https://anime7.top/",
+  "searchUrl": "https://anime7.top/vod-search/?wd={keyword}",
+  "searchList": "//ul[contains(@class, 'hl-one-list')]/li",
+  "searchName": "//div[contains(@class, 'hl-item-title')]/a",
+  "searchLink": "//div[contains(@class, 'hl-item-title')]/a",
+  "lineNames": "//div[contains(@class, 'hl-plays-from')]/a",
+  "lineList": "//ul[contains(@class, 'hl-plays-list')]",
+  "episode": "/li/a"
+}
