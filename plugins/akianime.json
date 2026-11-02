@@ -1,0 +1,14 @@
+{
+  "api": "1",
+  "version": "1.0.0",
+  "name": "akianime",
+  "iconUrl": "https://www.akianime.cc/template/dsn2/static/img/icon.png",
+  "baseUrl": "https://www.akianime.cc/",
+  "searchUrl": "https://www.akianime.cc/bgmsearch/-------------.html?wd={keyword}",
+  "searchList": "//div[@class='row mask1'] /div",
+  "searchName": "/div /div[2] /a /h3",
+  "searchLink": "/div /div[2] /a",
+  "lineNames": "//div[contains(@class, 'anthology-tab')]/div/a",
+  "lineList": "//ul[contains(@class, 'anthology-list-play')]",
+  "episode": "/li/a"
+}
