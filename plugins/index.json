@@ -94,5 +94,21 @@
     "path": "moonci.json",
     "updateTime": "1793627162343",
     "api": "1"
+  },
+  {
+    "name": "akianime",
+    "version": "1.0.0",
+    "icon": "https://www.akianime.cc/template/dsn2/static/img/icon.png",
+    "path": "akianime.json",
+    "updateTime": "1793631000885",
+    "api": "1"
+  },
+  {
+    "name": "anime7",
+    "version": "1.0.0",
+    "icon": "https://ani7.b-cdn.net/upload/logo/icon.png",
+    "path": "anime7.json",
+    "updateTime": "1793631000885",
+    "api": "1"
   }
 ]
