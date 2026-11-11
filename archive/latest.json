@@ -1,67 +1,67 @@
 {
-  "source_updated_at": "2026-11-03T21:04:25Z",
-  "source_digest": "sha256:c60b418249c8c01d90a2379f916d53e5ce121476a161b1319987a4723f328309",
-  "source_name": "dump-2026-11-03.210402Z.zip",
-  "dump_name": "dump-2026-11-03.210402Z",
-  "browser_download_url": "https://github.com/openAnimeFlow/animeFlow-assets/releases/download/bangumi-anime-subject/dump-2026-11-03.210402Z-subject.jsonlines",
-  "name": "dump-2026-11-03.210402Z-subject.jsonlines",
+  "source_updated_at": "2026-11-10T21:04:27Z",
+  "source_digest": "sha256:caaac0ea65e38def9c811aa3b748c8bf7b35287928ef688069343c2970c2675d",
+  "source_name": "dump-2026-11-10.210405Z.zip",
+  "dump_name": "dump-2026-11-10.210405Z",
+  "browser_download_url": "https://github.com/openAnimeFlow/animeFlow-assets/releases/download/bangumi-anime-subject/dump-2026-11-10.210405Z-subject.jsonlines",
+  "name": "dump-2026-11-10.210405Z-subject.jsonlines",
   "content_type": "application/octet-stream",
-  "size": 64772536,
+  "size": 64809147,
   "assets": [
     {
-      "name": "dump-2026-11-03.210402Z-character.jsonlines",
-      "browser_download_url": "https://github.com/openAnimeFlow/animeFlow-assets/releases/download/bangumi-anime-subject/dump-2026-11-03.210402Z-character.jsonlines",
-      "size": 164789477,
+      "name": "dump-2026-11-10.210405Z-character.jsonlines",
+      "browser_download_url": "https://github.com/openAnimeFlow/animeFlow-assets/releases/download/bangumi-anime-subject/dump-2026-11-10.210405Z-character.jsonlines",
+      "size": 165191572,
       "content_type": "application/octet-stream"
     },
     {
-      "name": "dump-2026-11-03.210402Z-episode.jsonlines",
-      "browser_download_url": "https://github.com/openAnimeFlow/animeFlow-assets/releases/download/bangumi-anime-subject/dump-2026-11-03.210402Z-episode.jsonlines",
-      "size": 94187518,
+      "name": "dump-2026-11-10.210405Z-episode.jsonlines",
+      "browser_download_url": "https://github.com/openAnimeFlow/animeFlow-assets/releases/download/bangumi-anime-subject/dump-2026-11-10.210405Z-episode.jsonlines",
+      "size": 94239086,
       "content_type": "application/octet-stream"
     },
     {
-      "name": "dump-2026-11-03.210402Z-person-characters.jsonlines",
-      "browser_download_url": "https://github.com/openAnimeFlow/animeFlow-assets/releases/download/bangumi-anime-subject/dump-2026-11-03.210402Z-person-characters.jsonlines",
-      "size": 24237442,
+      "name": "dump-2026-11-10.210405Z-person-characters.jsonlines",
+      "browser_download_url": "https://github.com/openAnimeFlow/animeFlow-assets/releases/download/bangumi-anime-subject/dump-2026-11-10.210405Z-person-characters.jsonlines",
+      "size": 24344199,
       "content_type": "application/octet-stream"
     },
     {
-      "name": "dump-2026-11-03.210402Z-person-relations.jsonlines",
-      "browser_download_url": "https://github.com/openAnimeFlow/animeFlow-assets/releases/download/bangumi-anime-subject/dump-2026-11-03.210402Z-person-relations.jsonlines",
-      "size": 15726913,
+      "name": "dump-2026-11-10.210405Z-person-relations.jsonlines",
+      "browser_download_url": "https://github.com/openAnimeFlow/animeFlow-assets/releases/download/bangumi-anime-subject/dump-2026-11-10.210405Z-person-relations.jsonlines",
+      "size": 15827037,
       "content_type": "application/octet-stream"
     },
     {
-      "name": "dump-2026-11-03.210402Z-person.jsonlines",
-      "browser_download_url": "https://github.com/openAnimeFlow/animeFlow-assets/releases/download/bangumi-anime-subject/dump-2026-11-03.210402Z-person.jsonlines",
-      "size": 73918007,
+      "name": "dump-2026-11-10.210405Z-person.jsonlines",
+      "browser_download_url": "https://github.com/openAnimeFlow/animeFlow-assets/releases/download/bangumi-anime-subject/dump-2026-11-10.210405Z-person.jsonlines",
+      "size": 74094785,
       "content_type": "application/octet-stream"
     },
     {
-      "name": "dump-2026-11-03.210402Z-subject-characters.jsonlines",
-      "browser_download_url": "https://github.com/openAnimeFlow/animeFlow-assets/releases/download/bangumi-anime-subject/dump-2026-11-03.210402Z-subject-characters.jsonlines",
-      "size": 28227075,
+      "name": "dump-2026-11-10.210405Z-subject-characters.jsonlines",
+      "browser_download_url": "https://github.com/openAnimeFlow/animeFlow-assets/releases/download/bangumi-anime-subject/dump-2026-11-10.210405Z-subject-characters.jsonlines",
+      "size": 28308020,
       "content_type": "application/octet-stream"
     },
     {
-      "name": "dump-2026-11-03.210402Z-subject-persons.jsonlines",
-      "browser_download_url": "https://github.com/openAnimeFlow/animeFlow-assets/releases/download/bangumi-anime-subject/dump-2026-11-03.210402Z-subject-persons.jsonlines",
-      "size": 76021997,
+      "name": "dump-2026-11-10.210405Z-subject-persons.jsonlines",
+      "browser_download_url": "https://github.com/openAnimeFlow/animeFlow-assets/releases/download/bangumi-anime-subject/dump-2026-11-10.210405Z-subject-persons.jsonlines",
+      "size": 76288956,
       "content_type": "application/octet-stream"
     },
     {
-      "name": "dump-2026-11-03.210402Z-subject-relations.jsonlines",
-      "browser_download_url": "https://github.com/openAnimeFlow/animeFlow-assets/releases/download/bangumi-anime-subject/dump-2026-11-03.210402Z-subject-relations.jsonlines",
-      "size": 6690961,
+      "name": "dump-2026-11-10.210405Z-subject-relations.jsonlines",
+      "browser_download_url": "https://github.com/openAnimeFlow/animeFlow-assets/releases/download/bangumi-anime-subject/dump-2026-11-10.210405Z-subject-relations.jsonlines",
+      "size": 6687398,
       "content_type": "application/octet-stream"
     },
     {
-      "name": "dump-2026-11-03.210402Z-subject.jsonlines",
-      "browser_download_url": "https://github.com/openAnimeFlow/animeFlow-assets/releases/download/bangumi-anime-subject/dump-2026-11-03.210402Z-subject.jsonlines",
-      "size": 64772536,
+      "name": "dump-2026-11-10.210405Z-subject.jsonlines",
+      "browser_download_url": "https://github.com/openAnimeFlow/animeFlow-assets/releases/download/bangumi-anime-subject/dump-2026-11-10.210405Z-subject.jsonlines",
+      "size": 64809147,
       "content_type": "application/octet-stream"
     }
   ],
-  "updated_at": "2026-11-04T01:47:04.652220Z"
+  "updated_at": "2026-11-11T01:37:02.027174Z"
 }
